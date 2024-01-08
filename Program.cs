@@ -26,11 +26,9 @@ internal class Program
 public class HighCPUService : IHighCPUService
 {
     private bool _isRunning = false;
-    private static CancellationTokenSource cts;
 
     public void CancelHighCPU()
     {
-        //cts.Cancel();
         _isRunning = false;
     }
 
@@ -45,8 +43,6 @@ public class HighCPUService : IHighCPUService
         {
             return;
         }
-
-        cts = new CancellationTokenSource();
 
         _isRunning = true;
 

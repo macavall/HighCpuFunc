@@ -13,7 +13,6 @@ namespace HighCPUFunc561
         private readonly ILogger _logger;
         private readonly IHighCPUService _highCPUService;
         private bool _isRunning = false;
-        public static CancellationTokenSource cts;
 
         public http1(ILoggerFactory loggerFactory, IHighCPUService highCPUService)
         {
