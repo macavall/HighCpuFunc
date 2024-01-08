@@ -26,7 +26,7 @@ namespace HighCPUFunc561
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            var tempCts = new CancellationTokenSource();
+            _highCPUService.StartHighCPU();
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "text/plain; charset=utf-8");

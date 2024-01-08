@@ -28,6 +28,11 @@ public class HighCPUService : IHighCPUService
     private bool _isRunning = false;
     private static CancellationTokenSource cts;
 
+    public void CancelHighCPU()
+    {
+        cts.Cancel();
+    }
+
     public void StartHighCPU()
     {
         if (_isRunning)
@@ -35,13 +40,15 @@ public class HighCPUService : IHighCPUService
             return;
         }
 
+        cts = new CancellationTokenSource();
+
         _isRunning = true;
 
         try
         {
 
-            while (!cts.Token.IsCancellationRequested)
-            {
+            //while (!cts.Token.IsCancellationRequested)
+            //{
                 Console.WriteLine("Thread is running...");
 
                 int numCores = Environment.ProcessorCount;
@@ -55,20 +62,21 @@ public class HighCPUService : IHighCPUService
                     tasks[i] = Task.Factory.StartNew(() =>
                     {
                         // Simulate a CPU-intensive operation
-                        while (true) { }
+                        while (!cts.Token.IsCancellationRequested) 
+                        {
+                            Thread.SpinWait(5000000);
+                        }
                     }, TaskCreationOptions.LongRunning);
                 }
 
-                // Wait for user input to stop the CPU-intensive work
-                Console.WriteLine("Press Enter to stop the CPU-intensive tasks...");
-                Console.ReadLine();
+            Task.WaitAll(tasks, cts.Token);
 
                 // Stop all tasks
                 foreach (var task in tasks)
                 {
                     task.Dispose(); // Dispose to release resources
                 }
-            }
+            //}
         }
         catch (OperationCanceledException)
         {
@@ -77,6 +85,7 @@ public class HighCPUService : IHighCPUService
         finally
         {
             _isRunning = false;
+            cts = new CancellationTokenSource();
         }
     }
 }
@@ -84,4 +93,5 @@ public class HighCPUService : IHighCPUService
 public interface IHighCPUService
 {
     public void StartHighCPU();
+    public void CancelHighCPU();
 }
