@@ -26,14 +26,27 @@ namespace HighCPUFunc561
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            _highCPUService.StartHighCPU();
+            _ = Task.Factory.StartNew(() =>
+            {
+                _highCPUService.StartHighCPU();
+            });
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
+            if (!_highCPUService.getIsRunning())
+            {
+                var response = req.CreateResponse(HttpStatusCode.NotFound);
 
-            response.WriteString("Welcome to Azure Functions!");
+                return response;
+            }
+            else
+            {
+                var response = req.CreateResponse(HttpStatusCode.OK);
 
-            return response;
+                response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
+
+                response.WriteString("Welcome to Azure Functions!");
+
+                return response;
+            }
         }
     }
 }

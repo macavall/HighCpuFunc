@@ -30,10 +30,16 @@ public class HighCPUService : IHighCPUService
 
     public void CancelHighCPU()
     {
-        cts.Cancel();
+        //cts.Cancel();
+        _isRunning = false;
     }
 
-    public void StartHighCPU()
+    public bool getIsRunning()
+    {
+        return _isRunning;
+    }
+
+    public async Task StartHighCPU()
     {
         if (_isRunning)
         {
@@ -46,52 +52,35 @@ public class HighCPUService : IHighCPUService
 
         try
         {
+            Console.WriteLine("High CPU load started.");
 
-            //while (!cts.Token.IsCancellationRequested)
-            //{
-                Console.WriteLine("Thread is running...");
+            int numCores = Environment.ProcessorCount;
+            Task[] tasks = new Task[numCores];
 
-                int numCores = Environment.ProcessorCount;
-
-                Console.WriteLine($"Detected {numCores} processor cores.");
-
-                // Create tasks to run CPU-intensive work on each core
-                Task[] tasks = new Task[numCores];
-                for (int i = 0; i < numCores; i++)
+            for (int i = 0; i < numCores; i++)
+            {
+                tasks[i] = Task.Run(() =>
                 {
-                    tasks[i] = Task.Factory.StartNew(() =>
+                    while (_isRunning)
                     {
-                        // Simulate a CPU-intensive operation
-                        while (!cts.Token.IsCancellationRequested) 
-                        {
-                            Thread.SpinWait(5000000);
-                        }
-                    }, TaskCreationOptions.LongRunning);
-                }
+                        // Simulate CPU-intensive work
+                        //Task.Delay(10);
+                    }
+                });
+            }
 
-            Task.WaitAll(tasks, cts.Token);
-
-                // Stop all tasks
-                foreach (var task in tasks)
-                {
-                    task.Dispose(); // Dispose to release resources
-                }
-            //}
-        }
-        catch (OperationCanceledException)
-        {
-            Console.WriteLine("Thread has been canceled.");
+            await Task.WhenAll(tasks);
         }
         finally
         {
-            _isRunning = false;
-            cts = new CancellationTokenSource();
+            Console.WriteLine("High CPU load stopped.");
         }
     }
 }
 
 public interface IHighCPUService
 {
-    public void StartHighCPU();
+    public Task StartHighCPU();
     public void CancelHighCPU();
+    public bool getIsRunning();
 }
